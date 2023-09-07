@@ -1,20 +1,33 @@
 const express = require('express');
 const jsxViewEngine = require('jsx-view-engine');
+const dotenv = require('dotenv').config()
+const mongoose = require('mongoose');
+
 const fruits = require('./models/fruits.js');
 const vegatables = require('./models/veggies.js');
+
 const app = express();
+
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connection.once('open', ()=> {
+    console.log('connected to mongo');
+});
+
 app.set('view engine', 'jsx');
 app.engine('jsx', jsxViewEngine());
+
 // Define middleware
 app.use((req, res, next) => {
     console.log('I run for all routes');
     next();
 });
 app.use(express.urlencoded({extended:false}));
+
 // Define routes
 app.get('/', (req, res) => {
     res.send("Home page of Fruits and Veggies");
 });
+
 app.get('/fruits/', (req, res) => {
     // res.send(fruits)
     res.render('Index', {fruits: fruits});
@@ -22,6 +35,7 @@ app.get('/fruits/', (req, res) => {
 app.get('/fruits/new', (req, res) => {
     res.render('New');
 });
+
 app.post('/fruits', (req, res) => {
     if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
         req.body.readyToEat = true; //do some data correction
@@ -33,6 +47,7 @@ app.post('/fruits', (req, res) => {
     // res.send('data received');
     res.redirect('/fruits'); // sends user back to fruits page, /fruits
 });
+
 // Create a SHOW route (show routes use a get request)
 app.get('/fruits/:indexOfFruitsArray', (req, res) => {
     // res.send(fruits[req.params.indexOfFruitsArray]);
@@ -41,12 +56,15 @@ app.get('/fruits/:indexOfFruitsArray', (req, res) => {
         fruit: fruits[req.params.indexOfFruitsArray]
     });
 });
+
 app.get('/veggies/', (req, res) => {
     res.send(vegatables)
 });
+
 app.get('/veggies/:indexOfVegetablesArray', (req, res) => {
     res.send(vegatables[req.params.indexOfVegetablesArray]);
 });
-app.listen(3000, () => {
+app.l
+isten(3000, () => {
     console.log('Listening on port 3000');
 });
